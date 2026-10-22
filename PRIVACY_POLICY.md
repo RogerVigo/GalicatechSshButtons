@@ -107,4 +107,4 @@ If you have questions about this Privacy Policy or the App's privacy practices, 
 
 **Galaica Tech**
 
-Email: **[INSERT CONTACT EMAIL]**
+Email: [galaicatech@gmail.com](mailto:galaicatech@gmail.com)
