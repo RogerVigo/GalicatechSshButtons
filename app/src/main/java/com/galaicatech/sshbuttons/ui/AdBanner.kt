@@ -74,7 +74,10 @@ fun AdBanner(modifier: Modifier = Modifier) {
         }
     }
 
-    if (failed) return
+    if (failed) {
+        Box(modifier = modifier.fillMaxWidth().navigationBarsPadding())
+        return
+    }
 
     Surface(
         modifier = modifier.fillMaxWidth(),

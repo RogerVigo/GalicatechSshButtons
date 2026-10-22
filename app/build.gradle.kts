@@ -22,7 +22,7 @@ android {
         applicationId = "com.galaicatech.sshbuttons"
         minSdk = 26
         targetSdk = 36
-        versionCode = 2
+        versionCode = 3
         versionName = "1.0"
 
         manifestPlaceholders["admobAppId"] = "ca-app-pub-7586210775844150~7087054965"
