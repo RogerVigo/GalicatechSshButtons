@@ -16,13 +16,13 @@ val keystoreProperties = Properties().apply {
 
 android {
     namespace = "com.galaicatech.sshbuttons"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.galaicatech.sshbuttons"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 1
+        targetSdk = 36
+        versionCode = 2
         versionName = "1.0"
 
         manifestPlaceholders["admobAppId"] = "ca-app-pub-7586210775844150~7087054965"
