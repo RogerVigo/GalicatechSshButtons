@@ -88,112 +88,114 @@ fun MainScreen(
         hosts.map { host -> HostSection(host, buttons.filter { it.hostId == host.id }) }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "SSH Buttons",
-                        fontWeight = FontWeight.SemiBold
-                    )
-                },
-                actions = {
-                    FilledTonalButton(
-                        onClick = { hostEditorTarget = HostConfig() },
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
-                        modifier = Modifier.padding(end = 8.dp)
-                    ) {
-                        Icon(
-                            Icons.Rounded.Add,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "SSH Buttons",
+                            fontWeight = FontWeight.SemiBold
                         )
-                        Spacer(Modifier.width(4.dp))
-                        Text("Host")
+                    },
+                    actions = {
+                        FilledTonalButton(
+                            onClick = { hostEditorTarget = HostConfig() },
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                            modifier = Modifier.padding(end = 8.dp)
+                        ) {
+                            Icon(
+                                Icons.Rounded.Add,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text("Host")
+                        }
+                    }
+                )
+            },
+            bottomBar = {
+                if (adsAllowed) {
+                    AdBanner()
+                } else {
+                    Box(modifier = Modifier.fillMaxWidth().navigationBarsPadding())
+                }
+            }
+        ) { innerPadding ->
+            if (sections.isEmpty()) {
+                EmptyState(
+                    onAddHost = { hostEditorTarget = HostConfig() },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    items(sections, key = { it.host.id }) { section ->
+                        HostSectionCard(
+                            section = section,
+                            onAddCommand = {
+                                commandEditorTarget = CommandEditorTarget(
+                                    button = CommandButton(
+                                        hostId = section.host.id,
+                                        label = "",
+                                        command = ""
+                                    ),
+                                    initialHostId = section.host.id
+                                )
+                            },
+                            onEditHost = { hostEditorTarget = section.host },
+                            onDeleteHost = { hostToDelete = section.host },
+                            onRunCommand = { button ->
+                                if (button.requireConfirmation) {
+                                    commandToConfirm = section.host to button
+                                } else {
+                                    viewModel.runCommand(section.host, button)
+                                }
+                            },
+                            onEditCommand = { button ->
+                                commandEditorTarget = CommandEditorTarget(button, button.hostId)
+                            },
+                            onDeleteCommand = { button -> buttonToDelete = button }
+                        )
                     }
                 }
-            )
-        },
-        bottomBar = {
-            if (adsAllowed) {
-                AdBanner()
-            } else {
-                Box(modifier = Modifier.fillMaxWidth().navigationBarsPadding())
             }
         }
-    ) { innerPadding ->
-        if (sections.isEmpty()) {
-            EmptyState(
-                onAddHost = { hostEditorTarget = HostConfig() },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
+
+        hostEditorTarget?.let { target ->
+            HostEditorDialog(
+                host = target,
+                isNew = hosts.none { it.id == target.id },
+                onDismiss = { hostEditorTarget = null },
+                onSave = { edited ->
+                    viewModel.saveHost(edited)
+                    hostEditorTarget = null
+                },
+                onForgetHostKey = viewModel::forgetHostKey
             )
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                items(sections, key = { it.host.id }) { section ->
-                    HostSectionCard(
-                        section = section,
-                        onAddCommand = {
-                            commandEditorTarget = CommandEditorTarget(
-                                button = CommandButton(
-                                    hostId = section.host.id,
-                                    label = "",
-                                    command = ""
-                                ),
-                                initialHostId = section.host.id
-                            )
-                        },
-                        onEditHost = { hostEditorTarget = section.host },
-                        onDeleteHost = { hostToDelete = section.host },
-                        onRunCommand = { button ->
-                            if (button.requireConfirmation) {
-                                commandToConfirm = section.host to button
-                            } else {
-                                viewModel.runCommand(section.host, button)
-                            }
-                        },
-                        onEditCommand = { button ->
-                            commandEditorTarget = CommandEditorTarget(button, button.hostId)
-                        },
-                        onDeleteCommand = { button -> buttonToDelete = button }
-                    )
+        }
+
+        commandEditorTarget?.let { target ->
+            CommandEditorDialog(
+                button = target.button,
+                hosts = hosts,
+                isNew = buttons.none { it.id == target.button.id },
+                initialHostId = target.initialHostId,
+                onDismiss = { commandEditorTarget = null },
+                onSave = { edited ->
+                    viewModel.saveButton(edited)
+                    commandEditorTarget = null
                 }
-            }
+            )
         }
-    }
-
-    hostEditorTarget?.let { target ->
-        HostEditorDialog(
-            host = target,
-            isNew = hosts.none { it.id == target.id },
-            onDismiss = { hostEditorTarget = null },
-            onSave = { edited ->
-                viewModel.saveHost(edited)
-                hostEditorTarget = null
-            },
-            onForgetHostKey = viewModel::forgetHostKey
-        )
-    }
-
-    commandEditorTarget?.let { target ->
-        CommandEditorDialog(
-            button = target.button,
-            hosts = hosts,
-            isNew = buttons.none { it.id == target.button.id },
-            initialHostId = target.initialHostId,
-            onDismiss = { commandEditorTarget = null },
-            onSave = { edited ->
-                viewModel.saveButton(edited)
-                commandEditorTarget = null
-            }
-        )
     }
 
     hostToDelete?.let { host ->

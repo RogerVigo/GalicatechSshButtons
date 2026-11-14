@@ -22,8 +22,8 @@ android {
         applicationId = "com.galaicatech.sshbuttons"
         minSdk = 26
         targetSdk = 36
-        versionCode = 3
-        versionName = "1.0"
+        versionCode = 4
+        versionName = "1.1"
 
         manifestPlaceholders["admobAppId"] = "ca-app-pub-7586210775844150~7087054965"
     }
@@ -56,7 +56,8 @@ android {
             if (keystorePropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("release")
             }
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -85,6 +86,15 @@ android {
 }
 
 dependencies {
+    constraints {
+        implementation("androidx.fragment:fragment:1.8.9") {
+            because(
+                "play-services-basement 18.4.0 pulls fragment 1.1.0, " +
+                    "which Google Play flags as outdated"
+            )
+        }
+    }
+
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.4")
